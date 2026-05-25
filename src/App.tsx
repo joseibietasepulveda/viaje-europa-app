@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
+  ArrowLeft,
+  ArrowRight,
   CalendarDays,
   Camera,
   Car,
@@ -36,6 +38,11 @@ type Stop = {
   headline: string
   details: string[]
   highlights: string[]
+}
+
+type PreviewPhoto = {
+  alt: string
+  url: string
 }
 
 const phaseLabels: Record<Phase, string> = {
@@ -715,10 +722,62 @@ const route = routeStopIds
   .map((id) => stopsById.get(id)?.position)
   .filter((position): position is LatLngExpression => Boolean(position))
 
-function FlyToStop({ stop }: { stop: Stop }) {
+const photoQueries: Record<string, string> = {
+  paris: 'paris,eiffel,france',
+  versailles: 'versailles,palace,france',
+  brussels: 'brussels,grand-place,belgium',
+  ghent: 'ghent,belgium,canal',
+  cannes: 'cannes,france,riviera',
+  menton: 'menton,france,riviera',
+  monaco: 'monaco,monte-carlo',
+  nice: 'nice,france,promenade',
+  'saint-tropez': 'saint-tropez,france',
+  marseille: 'marseille,france,port',
+  cassis: 'cassis,calanques,france',
+  avignon: 'avignon,france,palace',
+  'pont-du-gard': 'pont-du-gard,france',
+  nimes: 'nimes,france,roman',
+  carcassonne: 'carcassonne,france,castle',
+  collioure: 'collioure,france,sea',
+  perpignan: 'perpignan,france',
+  cadaques: 'cadaques,spain,costa-brava',
+  tossa: 'tossa-de-mar,spain',
+  barcelona: 'barcelona,spain,gaudi',
+  madrid: 'madrid,spain,city',
+  toledo: 'toledo,spain,medieval',
+  segovia: 'segovia,spain,aqueduct',
+}
+
+function getStopPhotos(stop: Stop): PreviewPhoto[] {
+  const query = photoQueries[stop.id] ?? `${stop.name},${stop.country}`
+
+  return [
+    {
+      alt: `Foto principal de ${stop.name}`,
+      url: stop.photo,
+    },
+    {
+      alt: `Segunda foto de ${stop.name}`,
+      url: `https://loremflickr.com/1200/800/${query}?lock=${stop.id.length * 37 + 11}`,
+    },
+    {
+      alt: `Tercera foto de ${stop.name}`,
+      url: `https://loremflickr.com/1200/800/${query}?lock=${stop.id.length * 53 + 29}`,
+    },
+  ]
+}
+
+function MapFocusController({ stop }: { stop: Stop }) {
   const map = useMap()
+
   useEffect(() => {
-    map.flyTo(stop.position, 7, { duration: 0.75 })
+    map.invalidateSize({ pan: false })
+    window.requestAnimationFrame(() => {
+      map.flyTo(stop.position, Math.max(map.getZoom(), 7), {
+        duration: 0.65,
+        easeLinearity: 0.2,
+      })
+    })
   }, [map, stop])
 
   return null
@@ -728,13 +787,48 @@ function App() {
   const [selectedId, setSelectedId] = useState(stops[0].id)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [phaseFilter, setPhaseFilter] = useState<Phase | 'all'>('all')
+  const [photoIndexes, setPhotoIndexes] = useState<Record<string, number>>({})
 
   const selectedStop = stops.find((stop) => stop.id === selectedId) ?? stops[0]
   const hoveredStop = stops.find((stop) => stop.id === hoveredId)
+  const previewStop = hoveredStop ?? selectedStop
+  const previewPhotos = getStopPhotos(previewStop)
+  const selectedPhotos = getStopPhotos(selectedStop)
+  const previewPhotoIndex = photoIndexes[previewStop.id] ?? 0
+  const selectedPhotoIndex = photoIndexes[selectedStop.id] ?? 0
+  const previewPhoto = previewPhotos[previewPhotoIndex] ?? previewPhotos[0]
+  const selectedPhoto = selectedPhotos[selectedPhotoIndex] ?? selectedPhotos[0]
   const visibleStops =
     phaseFilter === 'all'
       ? stops
       : stops.filter((stop) => stop.phase === phaseFilter)
+
+  function selectStop(stopId: string) {
+    const scrollPosition = { left: window.scrollX, top: window.scrollY }
+    setSelectedId(stopId)
+
+    window.requestAnimationFrame(() => {
+      window.scrollTo(scrollPosition)
+    })
+  }
+
+  function changePhoto(stopId: string, direction: -1 | 1) {
+    setPhotoIndexes((current) => {
+      const stop = stopsById.get(stopId)
+      if (!stop) {
+        return current
+      }
+
+      const photoCount = getStopPhotos(stop).length
+      const nextIndex =
+        ((current[stopId] ?? 0) + direction + photoCount) % photoCount
+
+      return {
+        ...current,
+        [stopId]: nextIndex,
+      }
+    })
+  }
 
   return (
     <main className="app-shell">
@@ -808,7 +902,7 @@ function App() {
                   selectedStop.id === stop.id ? 'selected' : ''
                 }`}
                 key={stop.id}
-                onClick={() => setSelectedId(stop.id)}
+                onClick={() => selectStop(stop.id)}
                 onMouseEnter={() => setHoveredId(stop.id)}
                 onMouseLeave={() => setHoveredId(null)}
                 type="button"
@@ -834,6 +928,7 @@ function App() {
             center={[45.6, 2.3]}
             zoom={5}
             minZoom={4}
+            keyboard={false}
             scrollWheelZoom
             className="travel-map"
           >
@@ -859,7 +954,7 @@ function App() {
               <CircleMarker
                 center={stop.position}
                 eventHandlers={{
-                  click: () => setSelectedId(stop.id),
+                  click: () => selectStop(stop.id),
                   mouseout: () => setHoveredId(null),
                   mouseover: () => setHoveredId(stop.id),
                 }}
@@ -882,7 +977,7 @@ function App() {
                 </Tooltip>
               </CircleMarker>
             ))}
-            <FlyToStop stop={selectedStop} />
+            <MapFocusController stop={selectedStop} />
           </MapContainer>
 
           <div className="map-legend">
@@ -894,18 +989,47 @@ function App() {
             ))}
           </div>
 
-          {(hoveredStop ?? selectedStop) && (
+          {previewStop && (
             <article className="hover-preview">
-              <img
-                alt={`Vista de ${hoveredStop?.name ?? selectedStop.name}`}
-                src={(hoveredStop ?? selectedStop).photo}
-              />
-              <div>
+              <div className="preview-photo-frame">
+                <img alt={previewPhoto.alt} src={previewPhoto.url} />
+                <div
+                  aria-label={`Fotos de ${previewStop.name}`}
+                  className="photo-switcher"
+                >
+                  <button
+                    aria-label="Foto anterior"
+                    onClick={(event) => {
+                      event.preventDefault()
+                      event.stopPropagation()
+                      changePhoto(previewStop.id, -1)
+                    }}
+                    type="button"
+                  >
+                    <ArrowLeft size={15} />
+                  </button>
+                  <span>
+                    {previewPhotoIndex + 1}/{previewPhotos.length}
+                  </span>
+                  <button
+                    aria-label="Foto siguiente"
+                    onClick={(event) => {
+                      event.preventDefault()
+                      event.stopPropagation()
+                      changePhoto(previewStop.id, 1)
+                    }}
+                    type="button"
+                  >
+                    <ArrowRight size={15} />
+                  </button>
+                </div>
+              </div>
+              <div className="preview-copy">
                 <span>
                   <Camera size={15} /> Vista previa
                 </span>
-                <strong>{(hoveredStop ?? selectedStop).name}</strong>
-                <p>{(hoveredStop ?? selectedStop).headline}</p>
+                <strong>{previewStop.name}</strong>
+                <p>{previewStop.headline}</p>
               </div>
             </article>
           )}
@@ -915,7 +1039,7 @@ function App() {
           <img
             alt={`Foto de presentación de ${selectedStop.name}`}
             className="detail-photo"
-            src={selectedStop.photo}
+            src={selectedPhoto.url}
           />
           <div className="detail-body">
             <p className="eyebrow">{phaseLabels[selectedStop.phase]}</p>
