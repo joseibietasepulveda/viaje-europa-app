@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   ArrowLeft,
   ArrowRight,
@@ -18,7 +18,6 @@ import {
   Polyline,
   TileLayer,
   Tooltip,
-  useMap,
 } from 'react-leaflet'
 import type { LatLngExpression } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -767,22 +766,6 @@ function getStopPhotos(stop: Stop): PreviewPhoto[] {
   ]
 }
 
-function MapFocusController({ stop }: { stop: Stop }) {
-  const map = useMap()
-
-  useEffect(() => {
-    map.invalidateSize({ pan: false })
-    window.requestAnimationFrame(() => {
-      map.flyTo(stop.position, Math.max(map.getZoom(), 7), {
-        duration: 0.65,
-        easeLinearity: 0.2,
-      })
-    })
-  }, [map, stop])
-
-  return null
-}
-
 function App() {
   const [selectedId, setSelectedId] = useState(stops[0].id)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
@@ -977,7 +960,6 @@ function App() {
                 </Tooltip>
               </CircleMarker>
             ))}
-            <MapFocusController stop={selectedStop} />
           </MapContainer>
 
           <div className="map-legend">
