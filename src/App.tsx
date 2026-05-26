@@ -721,49 +721,337 @@ const route = routeStopIds
   .map((id) => stopsById.get(id)?.position)
   .filter((position): position is LatLngExpression => Boolean(position))
 
-const photoQueries: Record<string, string> = {
-  paris: 'paris,eiffel,france',
-  versailles: 'versailles,palace,france',
-  brussels: 'brussels,grand-place,belgium',
-  ghent: 'ghent,belgium,canal',
-  cannes: 'cannes,france,riviera',
-  menton: 'menton,france,riviera',
-  monaco: 'monaco,monte-carlo',
-  nice: 'nice,france,promenade',
-  'saint-tropez': 'saint-tropez,france',
-  marseille: 'marseille,france,port',
-  cassis: 'cassis,calanques,france',
-  avignon: 'avignon,france,palace',
-  'pont-du-gard': 'pont-du-gard,france',
-  nimes: 'nimes,france,roman',
-  carcassonne: 'carcassonne,france,castle',
-  collioure: 'collioure,france,sea',
-  perpignan: 'perpignan,france',
-  cadaques: 'cadaques,spain,costa-brava',
-  tossa: 'tossa-de-mar,spain',
-  barcelona: 'barcelona,spain,gaudi',
-  madrid: 'madrid,spain,city',
-  toledo: 'toledo,spain,medieval',
-  segovia: 'segovia,spain,aqueduct',
+const stopPhotoGalleryEntries: Record<string, Array<[string, string]>> = {
+  paris: [
+    [
+      'Eiffel Tower',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Tour_Eiffel_Wikimedia_Commons_(cropped).jpg?width=1280',
+    ],
+    [
+      'Arc de Triomphe',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Arc_de_Triomphe%2C_Paris_21_October_2010.jpg?width=1280',
+    ],
+    [
+      'Sacré-Cœur, Paris',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Le_sacre_coeur.jpg?width=1280',
+    ],
+  ],
+  versailles: [
+    [
+      'Palace of Versailles',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Versailles-Chateau-Jardins02.jpg?width=1280',
+    ],
+    [
+      'Gardens of Versailles',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Vue_a%C3%A9rienne_du_domaine_de_Versailles_le_20_ao%C3%BBt_2014_par_ToucanWings_-_Creative_Commons_By_Sa_3.0_-_22.jpg?width=1280',
+    ],
+    [
+      'Grand Trianon',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/78-Versailles-grand-Trianon-jardins.jpg?width=1280',
+    ],
+  ],
+  brussels: [
+    [
+      'Grand-Place',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Grand-Place%2C_Brussels_-_panorama%2C_June_2018.jpg?width=1280',
+    ],
+    [
+      'Royal Saint-Hubert Galleries',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Galeries_royales_Saint-Hubert_Bruxelles.JPG?width=1280',
+    ],
+    [
+      'Mont des Arts',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Mont_des_Arts%2C_Brussels%2C_Belgium.jpg?width=1280',
+    ],
+  ],
+  ghent: [
+    [
+      'Graslei',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Graslei_gent_avondlicht.jpg?width=1280',
+    ],
+    [
+      'Gravensteen',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Gent_Gravensteen_R01.jpg?width=1280',
+    ],
+    [
+      "Saint Bavo's Cathedral, Ghent",
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Gent-Sint-Baafskathedraal_vom_Belfried_aus_gesehen.jpg?width=1280',
+    ],
+  ],
+  cannes: [
+    [
+      'Cannes',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Cannes_from_Suquet_Tower_03.jpg?width=1280',
+    ],
+    [
+      'Promenade de la Croisette',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Cannes_-_La_Croisette.jpg?width=1280',
+    ],
+    [
+      'Palais des Festivals et des Congrès',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Cannes_Palais_des_Festivals_et_des_Congr%C3%A8s.jpg?width=1280',
+    ],
+  ],
+  menton: [
+    [
+      'Menton',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Menton_february_13.jpg?width=1280',
+    ],
+    [
+      'Basilique Saint-Michel-Archange de Menton',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/D6098_menton_eglise.jpg?width=1280',
+    ],
+    [
+      'Serre de la Madone',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Jardin_Serre_de_la_Madone_-_DSC04128.JPG?width=1280',
+    ],
+  ],
+  monaco: [
+    [
+      'Casino de Monte-Carlo',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Casino_de_montecarlo-monaco-2009.JPG?width=1280',
+    ],
+    [
+      "Prince's Palace of Monaco",
+      'https://commons.wikimedia.org/wiki/Special:FilePath/%D0%9C%D0%9E%D0%9D%D0%90%D0%9A%D0%9E_-_panoramio_(4).jpg?width=1280',
+    ],
+    [
+      'Port Hercules',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Port_Hercules%2C_Monaco.jpg?width=1280',
+    ],
+  ],
+  nice: [
+    [
+      'Promenade des Anglais',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Promenade_des_Anglais-Nice.jpg?width=1280',
+    ],
+    [
+      'Cimetière du Château (Nice)',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Cimeti%C3%A8re_Colline_du_Ch%C3%A2teau_Nice.JPG?width=1280',
+    ],
+    [
+      'Vieux-Nice',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Vue_du_Vieux-Nice.jpg?width=1280',
+    ],
+  ],
+  'saint-tropez': [
+    [
+      'Saint-Tropez',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Saint-Tropez_-_Vue_g%C3%A9n%C3%A9rale%2C_%C3%A9glise%2C_phare.jpg?width=1280',
+    ],
+    [
+      'Citadelle de Saint-Tropez',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Aerial_view_of_the_Citadel_of_Saint-Tropez%2C_France_(52723266272).jpg?width=1280',
+    ],
+    [
+      'Port de Saint-Tropez',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Old_city_center_of_Saint-Tropez_with_harbour_and_tall_ships_-_panoramio.jpg?width=1280',
+    ],
+  ],
+  marseille: [
+    [
+      'Old Port of Marseille',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Marseille_Old_Port.jpg?width=1280',
+    ],
+    [
+      'Notre-Dame de la Garde',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Notre-Dame_de_la_Garde_aerial_view_2020.jpeg?width=1280',
+    ],
+    [
+      'Fort Saint-Jean (Marseille)',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Marseille_-_Fort_Saint-Jean_16.jpg?width=1280',
+    ],
+  ],
+  cassis: [
+    [
+      'Cassis',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Cassis_(cropped).jpg?width=1280',
+    ],
+    [
+      'Calanques National Park',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/En-Vau_calanque_4.jpg?width=1280',
+    ],
+    [
+      'Calanque de Port-Miou',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Calanques_Port-Miou.jpg?width=1280',
+    ],
+  ],
+  avignon: [
+    [
+      'Palais des Papes',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Avignon_Palais_des_Papes_2013.jpg?width=1280',
+    ],
+    [
+      'Pont Saint-Bénézet',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/%22Sur_le_Pont_d%27Avignon_on_y_danse%22_is_the_famous_song%2C_but_now_we_see_only_many_tourist_just_standing_there_-_panoramio.jpg?width=1280',
+    ],
+    [
+      'Avignon',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Vue_a%C3%A9rienne_2_JP_Campomar.jpg?width=1280',
+    ],
+  ],
+  'pont-du-gard': [
+    [
+      'Pont du Gard',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Pont_du_Gard_BLS.jpg?width=1280',
+    ],
+    [
+      'Pont du Gard',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Pont_du_Gard_(30).jpg?width=1280',
+    ],
+    [
+      'Gardon',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Pont_Du_Gard2.jpg?width=1280',
+    ],
+  ],
+  nimes: [
+    [
+      'Arena of Nîmes',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Arenes_de_Nimes_Alt_1.jpg?width=1280',
+    ],
+    [
+      'Maison carrée',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Maison_Carree_in_Nimes_(16).jpg?width=1280',
+    ],
+    [
+      'Jardins de la Fontaine',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/N%C3%AEmes_Jardin_de_La_Fontaine.jpg?width=1280',
+    ],
+  ],
+  carcassonne: [
+    [
+      'Cité de Carcassonne',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Cit%C3%A9_de_Carcassonne_en_panorama.jpg?width=1280',
+    ],
+    [
+      'Cathédrale Saint-Michel de Carcassonne',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Catedral%2C_Carcasona%2C_Francia%2C_2023-01-08%2C_DD_104-106_HDR.jpg?width=1280',
+    ],
+    [
+      'Basilica of Saints Nazarius and Celsus',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Carcassonne_JPG04.jpg?width=1280',
+    ],
+  ],
+  collioure: [
+    [
+      'Collioure',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Collioure_002.jpg?width=1280',
+    ],
+    [
+      'Château royal de Collioure',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Chateau_royal_de_Collioure_01.jpg?width=1280',
+    ],
+    [
+      'Église Notre-Dame-des-Anges de Collioure',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/008_Esgl%C3%A9sia_de_Nostra_Senyora_dels_%C3%80ngels.jpg?width=1280',
+    ],
+  ],
+  perpignan: [
+    [
+      'Perpignan',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Perpignan_-_panoramio.jpg?width=1280',
+    ],
+    [
+      'Palace of the Kings of Majorca',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Palais_des_rois_de_Majorque.jpg?width=1280',
+    ],
+    [
+      'Castillet',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Perpignan_Castillet_1.jpg?width=1280',
+    ],
+  ],
+  cadaques: [
+    [
+      'Cadaqués',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Cadaques_Pueblo_Marinero.JPG?width=1280',
+    ],
+    [
+      'Salvador Dalí House Museum',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Casadali.png?width=1280',
+    ],
+    [
+      'Paisaje Cabo de Creus',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Paisaje_Cabo_de_Creus.jpg?width=1280',
+    ],
+  ],
+  tossa: [
+    [
+      'Tossa de Mar',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Tossa_de_Mar_Torre%C3%B3n_JMM.JPG?width=1280',
+    ],
+    [
+      'Vila Vella de Tossa',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Vila_Vella_de_Tossa.jpg?width=1280',
+    ],
+    [
+      'Platja Gran de Tossa',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Platja_gran_de_Tossa.jpg?width=1280',
+    ],
+  ],
+  barcelona: [
+    [
+      'Sagrada Família',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/SF_maig_2026.jpg?width=1280',
+    ],
+    [
+      'Park Güell',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Parc_guell_-_panoramio.jpg?width=1280',
+    ],
+    [
+      'Casa Batlló',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Casa_Batllo_Overview_Barcelona_Spain_cut.jpg?width=1280',
+    ],
+  ],
+  madrid: [
+    [
+      'Plaza Mayor, Madrid',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Madrid_Plaza_Mayor_(48733706273).jpg?width=1280',
+    ],
+    [
+      'Gran Vía, Madrid',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Gran_V%C3%ADa_(Madrid)_1.jpg?width=1280',
+    ],
+    [
+      'Parque del Buen Retiro, Madrid',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/MADRID_051116_MXALX_041.jpg?width=1280',
+    ],
+  ],
+  toledo: [
+    [
+      'Toledo, Spain',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Toledo_(37737041515).jpg?width=1280',
+    ],
+    [
+      'Toledo Cathedral',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/FP_Toledo_Cathedral_2025_-_West_fa%C3%A7ade.jpg?width=1280',
+    ],
+    [
+      'Alcázar of Toledo',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/FP_Toledo_Alcazar_2025_-_Views.jpg?width=1280',
+    ],
+  ],
+  segovia: [
+    [
+      'Aqueduct of Segovia',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Aqueduct_of_Segovia_08.jpg?width=1280',
+    ],
+    [
+      'Alcázar of Segovia',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Panor%C3%A1mica_Oto%C3%B1o_Alc%C3%A1zar_de_Segovia.jpg?width=1280',
+    ],
+    [
+      'Segovia Cathedral',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Catedral_de_Santa_Mar%C3%ADa_de_Segovia_-_01.jpg?width=1280',
+    ],
+  ],
 }
 
 function getStopPhotos(stop: Stop): PreviewPhoto[] {
-  const query = photoQueries[stop.id] ?? `${stop.name},${stop.country}`
-
-  return [
-    {
-      alt: `Foto principal de ${stop.name}`,
-      url: stop.photo,
-    },
-    {
-      alt: `Segunda foto de ${stop.name}`,
-      url: `https://loremflickr.com/1200/800/${query}?lock=${stop.id.length * 37 + 11}`,
-    },
-    {
-      alt: `Tercera foto de ${stop.name}`,
-      url: `https://loremflickr.com/1200/800/${query}?lock=${stop.id.length * 53 + 29}`,
-    },
-  ]
+  return (
+    stopPhotoGalleryEntries[stop.id] ?? [
+      [`Foto principal de ${stop.name}`, stop.photo],
+    ]
+  ).map(([alt, url]) => ({ alt, url }))
 }
 
 function App() {
